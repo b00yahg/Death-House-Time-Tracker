@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Death House Time Tracker</title>
+    <style>
+        body {
+            font-family: 'Cardo', monospace;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #b30000;
+            background-image: url('https://wallpapers.com/images/hd/wood-floor-background-wl3vty8w87fpi887.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        h1 {
+            text-align: center;
+            color: #b30000;
+            text-shadow: 2px 2px 4px #000000;
+            font-family: 'Creepster', cursive;
+        }
+        #time-display {
+            display: flex;
+            justify-content: space-around;
+            font-size: 24px;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #ff0000;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #ff0000;
+        }
+        #action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 12px 18px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4a0000;
+            color: #ff9999;
+            border: 2px solid #ff9999;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        button:hover {
+            background-color: #660000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+        #event-log {
+            display: flex;
+            justify-content: space-between;
+            border: 2px solid #4a0000;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            box-shadow: 0 0 10px #ff0000;
+        }
+        .log-column {
+            width: 48%;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 8px;
+            background-color: rgba(74, 0, 0, 0.3);
+            border-radius: 3px;
+            color: #ff9999;
+        }
+        .icon {
+            margin-right: 5px;
+        }
+        #midnight-alert {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #4a0000;
+            color: #ff9999;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #ff0000;
+            z-index: 1000;
+            text-align: center;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Modern+Antiqua&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Death House Time Tracker</h1>
+    <div id="time-display">
+        <div id="group-one-time">Group One: 6:00:00 PM</div>
+        <div id="group-two-time" style="display: none;">Group Two: 6:00:00 PM</div>
+    </div>
+    <div id="action-buttons">
+        <button onclick="performAction('newFloor', 'Group One')"><span class="icon">🏠</span>New Floor (G1)</button>
+        <button onclick="performAction('searchRoom', 'Group One')"><span class="icon">🔍</span>Search Room (G1)</button>
+        <button onclick="performAction('shortRest', 'Group One')"><span class="icon">😴</span>Short Rest (G1)</button>
+        <button onclick="performAction('combat', 'Group One')"><span class="icon">⚔️</span>Combat Round (G1)</button>
+        <button id="split-button" onclick="toggleGroupSplit()"><span class="icon">👥</span>Let's split up gang!</button>
+    </div>
+    <div id="group-two-buttons" style="display: none;">
+        <button onclick="performAction('newFloor', 'Group Two')"><span class="icon">🏠</span>New Floor (G2)</button>
+        <button onclick="performAction('searchRoom', 'Group Two')"><span class="icon">🔍</span>Search Room (G2)</button>
+        <button onclick="performAction('shortRest', 'Group Two')"><span class="icon">😴</span>Short Rest (G2)</button>
+        <button onclick="performAction('combat', 'Group Two')"><span class="icon">⚔️</span>Combat Round (G2)</button>
+    </div>
+    <div id="event-log">
+        <div id="group-one-log" class="log-column"></div>
+        <div id="group-two-log" class="log-column" style="display: none;"></div>
+    </div>
+    <div id="midnight-alert">
+        <h2>Midnight Strikes!</h2>
+        <p>The flesh mound in the Ritual Chamber awakens and begins its hunt...</p>
+        <button onclick="hideMidnightAlert()">Close</button>
+    </div>
+    <audio id="hourly-chime" src="https://www.soundjay.com/church/church-bell-1.mp3"></audio>
+    <audio id="midnight-sound" src="https://soundbible.com/grab.php?id=1764&type=mp3"></audio>
+
+    <script>
+        let groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Start at 6:00:00 PM
+        let groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
+        let isGroupSplit = false;
+        let eventLog = [];
+    
+        function updateTimeDisplay() {
+            document.getElementById('group-one-time').textContent = `Group One: ${formatTime(groupOneClock)}`;
+            document.getElementById('group-two-time').textContent = `Group Two: ${formatTime(groupTwoClock)}`;
+        }
+    
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+    
+        function addTime(minutes, seconds = 0, group) {
+            const timeToAdd = minutes * 60000 + seconds * 1000;
+            const oldTime = group === 'Group One' ? new Date(groupOneClock) : new Date(groupTwoClock);
+            
+            if (group === 'Group One') {
+                groupOneClock = new Date(groupOneClock.getTime() + timeToAdd);
+            } else {
+                groupTwoClock = new Date(groupTwoClock.getTime() + timeToAdd);
+            }
+            
+            const newTime = group === 'Group One' ? groupOneClock : groupTwoClock;
+            
+            checkPassedThresholds(oldTime, newTime, group);
+            updateTimeDisplay();
+        }
+    
+        function checkPassedThresholds(oldTime, newTime, group) {
+            // Check for passed hour
+            const hoursPassed = (newTime.getHours() - oldTime.getHours() + 24) % 24;
+            for (let i = 0; i < hoursPassed; i++) {
+                document.getElementById('hourly-chime').play();
+            }
+            
+            // Check for passed midnight
+            if ((oldTime.getHours() < 24 && newTime.getHours() >= 0 && oldTime.getDate() !== newTime.getDate()) ||
+                (oldTime.getHours() === 23 && newTime.getHours() === 0)) {
+                document.getElementById('midnight-alert').style.display = 'block';
+                document.getElementById('midnight-sound').play();
+            }
+        }
+    
+        function hideMidnightAlert() {
+            document.getElementById('midnight-alert').style.display = 'none';
+        }
+    
+        function logEvent(action, group) {
+            const timeString = formatTime(group === 'Group One' ? groupOneClock : groupTwoClock);
+            const logEntry = {
+                time: timeString,
+                action: action,
+                group: group
+            };
+            eventLog.push(logEntry);
+            updateEventLog();
+        }
+    
+        function updateEventLog() {
+            const groupOneLog = document.getElementById('group-one-log');
+            const groupTwoLog = document.getElementById('group-two-log');
+            groupOneLog.innerHTML = '';
+            groupTwoLog.innerHTML = '';
+    
+            eventLog.forEach(entry => {
+                const logEntryElement = document.createElement('div');
+                logEntryElement.className = 'log-entry';
+                logEntryElement.textContent = `${entry.time} - ${entry.action}`;
+    
+                if (!isGroupSplit || entry.group === 'Group One') {
+                    groupOneLog.appendChild(logEntryElement.cloneNode(true));
+                }
+                if (isGroupSplit && entry.group === 'Group Two') {
+                    groupTwoLog.appendChild(logEntryElement.cloneNode(true));
+                }
+            });
+    
+            groupOneLog.scrollTop = groupOneLog.scrollHeight;
+            groupTwoLog.scrollTop = groupTwoLog.scrollHeight;
+        }
+    
+        function performAction(action, group) {
+            let actionDescription;
+    
+            switch (action) {
+                case 'newFloor':
+                    addTime(20, 0, group);
+                    actionDescription = 'Entered a new floor';
+                    break;
+                case 'searchRoom':
+                    addTime(20, 0, group);
+                    actionDescription = 'Searched a room';
+                    break;
+                case 'shortRest':
+                    addTime(60, 0, group);
+                    actionDescription = 'Took a short rest';
+                    break;
+                case 'combat':
+                    addTime(0, 10, group);
+                    actionDescription = 'Completed a combat round';
+                    break;
+            }
+    
+            logEvent(actionDescription, group);
+        }
+    
+        function toggleGroupSplit() {
+            isGroupSplit = !isGroupSplit;
+            const splitButton = document.getElementById('split-button');
+            
+            if (isGroupSplit) {
+                document.getElementById('group-two-time').style.display = 'block';
+                document.getElementById('group-two-buttons').style.display = 'block';
+                document.getElementById('group-two-log').style.display = 'block';
+                groupTwoClock = new Date(groupOneClock);
+                splitButton.innerHTML = '<span class="icon">👥</span>Back together';
+                logEvent('Group split', 'Group One');
+            } else {
+                document.getElementById('group-two-time').style.display = 'none';
+                document.getElementById('group-two-buttons').style.display = 'none';
+                document.getElementById('group-two-log').style.display = 'none';
+                // Merge times when groups reconvene
+                if (groupTwoClock > groupOneClock) {
+                    groupOneClock = new Date(groupTwoClock);
+                }
+                splitButton.innerHTML = '<span class="icon">👥</span>Let\'s split up gang!';
+                logEvent('Groups reunited', 'Group One');
+            }
+    
+            updateTimeDisplay();
+            updateEventLog();
+        }
+    
+        updateTimeDisplay();
+    </script>
+</body>
+</html>
