@@ -115,6 +115,8 @@
         <button onclick="performAction('searchRoom', 'Group One')"><span class="icon">🔍</span>Search Room (G1)</button>
         <button onclick="performAction('shortRest', 'Group One')"><span class="icon">😴</span>Short Rest (G1)</button>
         <button onclick="performAction('combat', 'Group One')"><span class="icon">⚔️</span>Combat Round (G1)</button>
+        <button onclick="performAction('ritualCasting', 'Group One')"><span class="icon">📜</span>Ritual Casting (G1)</button>
+        <button onclick="performAction('taking20', 'Group One')"><span class="icon">🎯</span>Taking 20 (G1)</button>
         <button id="split-button" onclick="toggleGroupSplit()"><span class="icon">👥</span>Let's split up gang!</button>
     </div>
     <div id="group-two-buttons" style="display: none;">
@@ -122,6 +124,8 @@
         <button onclick="performAction('searchRoom', 'Group Two')"><span class="icon">🔍</span>Search Room (G2)</button>
         <button onclick="performAction('shortRest', 'Group Two')"><span class="icon">😴</span>Short Rest (G2)</button>
         <button onclick="performAction('combat', 'Group Two')"><span class="icon">⚔️</span>Combat Round (G2)</button>
+        <button onclick="performAction('ritualCasting', 'Group One')"><span class="icon">📜</span>Ritual Casting (G2)</button>
+        <button onclick="performAction('taking20', 'Group One')"><span class="icon">🎯</span>Taking 20 (G2)</button>
     </div>
     <div id="event-log">
         <div id="group-one-log" class="log-column"></div>
@@ -238,6 +242,14 @@
                 case 'combat':
                     addTime(0, 10, group);
                     actionDescription = 'Completed a combat round';
+                    break;
+                case 'ritualCasting':
+                    addTime(10, 0, group);
+                    actionDescription = 'Performed ritual casting';
+                    break;
+                case 'taking20':
+                    addTime(1, 0, group);
+                    actionDescription = 'Took 20 on a check';
                     break;
             }
     
