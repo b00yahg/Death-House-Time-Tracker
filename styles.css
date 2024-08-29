@@ -96,9 +96,9 @@ h1 {
 
 .global-controls {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
-    margin-top: 20px;
+    align-items: center;
 }
 
 button {
@@ -131,12 +131,18 @@ button .icon {
 }
 
 #split-button, #reset-button {
-    grid-column: span 3;
-    background-color: var(--primary-color);
+    grid-column: 1 / span 3;
+}
+
+.undo-redo-container {
+    grid-column: 1 / span 3;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
 }
 
 .volume-control {
-    grid-column: span 3;
+    grid-column: 1 / span 3;
     display: flex;
     align-items: center;
     gap: 10px;
