@@ -1,5 +1,5 @@
 // death-house-tracker.js
-console.log("Death House Tracker script loaded");
+
 class DeathHouseTracker {
     constructor() {
         this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Start at 6:00:00 PM
@@ -267,9 +267,37 @@ class VerticalTimeline {
 
     render() {
         this.container.innerHTML = '';
+        let currentGroup = null;
+        let groupOneColumn = document.createElement('div');
+        let groupTwoColumn = document.createElement('div');
+        groupOneColumn.className = 'timeline-column group-one';
+        groupTwoColumn.className = 'timeline-column group-two';
+
         this.tracker.eventLog.forEach((event, index) => {
             const eventElement = this.createEventElement(event, index);
-            this.container.appendChild(eventElement);
+            if (event.action === 'Group split') {
+                currentGroup = 'split';
+                this.container.appendChild(groupOneColumn);
+                this.container.appendChild(groupTwoColumn);
+            } else if (event.action === 'Groups reunited') {
+                currentGroup = null;
+                this.container.appendChild(groupOneColumn);
+                this.container.appendChild(groupTwoColumn);
+                groupOneColumn = document.createElement('div');
+                groupTwoColumn = document.createElement('div');
+                groupOneColumn.className = 'timeline-column group-one';
+                groupTwoColumn.className = 'timeline-column group-two';
+            }
+
+            if (currentGroup === 'split') {
+                if (event.group === 'Group One') {
+                    groupOneColumn.appendChild(eventElement);
+                } else {
+                    groupTwoColumn.appendChild(eventElement);
+                }
+            } else {
+                this.container.appendChild(eventElement);
+            }
         });
     }
 
@@ -291,7 +319,6 @@ class VerticalTimeline {
     }
 
     getEventIcon(action) {
-        // Define icons for different actions
         const icons = {
             'Entered a new floor': '🏠',
             'Searched a room': '🔍',
@@ -307,12 +334,11 @@ class VerticalTimeline {
     }
 
     addEvent(event) {
-        const eventElement = this.createEventElement(event, this.tracker.eventLog.length - 1);
-        this.container.appendChild(eventElement);
+        this.render(); // Re-render the entire timeline for simplicity
     }
 
     toggleGroupSplit(isSplit) {
-        this.container.classList.toggle('group-split', isSplit);
+        this.render(); // Re-render to reflect the split or reunited state
     }
 }
 
