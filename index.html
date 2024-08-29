@@ -1,117 +1,348 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Death House Time Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Cardo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Death House Time Tracker</h1>
-        </header>
+// death-house-tracker.js
 
-        <div id="sticky-clock">
-            <div id="time-display" aria-live="polite">
-                <div id="group-one-time">Group One: 6:00:00 PM</div>
-                <div id="group-two-time" hidden>Group Two: 6:00:00 PM</div>
+class DeathHouseTracker {
+    constructor() {
+        this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Start at 6:00:00 PM
+        this.groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
+        this.isGroupSplit = false;
+        this.eventLog = [];
+        this.undoStack = [];
+        this.redoStack = [];
+        this.timeline = new VerticalTimeline(this);
+
+        this.initializeEventListeners();
+        this.loadState();
+        this.updateTimeDisplay();
+        this.timeline.render();
+    }
+
+    initializeEventListeners() {
+        document.getElementById('split-button').addEventListener('click', () => this.toggleGroupSplit());
+        document.querySelectorAll('.action-buttons button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const action = e.target.closest('button').dataset.action;
+                const group = e.target.closest('button').dataset.group;
+                this.performAction(action, group);
+            });
+        });
+        document.getElementById('undo-button').addEventListener('click', () => this.undo());
+        document.getElementById('redo-button').addEventListener('click', () => this.redo());
+        document.getElementById('reset-button').addEventListener('click', () => this.resetTracker());
+        document.getElementById('volume-control').addEventListener('input', (e) => this.setVolume(e.target.value));
+        document.getElementById('mute-toggle').addEventListener('click', () => this.toggleMute());
+    }
+
+    updateTimeDisplay() {
+        document.getElementById('group-one-time').textContent = `Group One: ${this.formatTime(this.groupOneClock)}`;
+        document.getElementById('group-two-time').textContent = `Group Two: ${this.formatTime(this.groupTwoClock)}`;
+    }
+
+    formatTime(date) {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    addTime(minutes, seconds = 0, group) {
+        const timeToAdd = minutes * 60000 + seconds * 1000;
+        const oldTime = group === 'Group One' ? new Date(this.groupOneClock) : new Date(this.groupTwoClock);
+        
+        if (group === 'Group One') {
+            this.groupOneClock = new Date(this.groupOneClock.getTime() + timeToAdd);
+        } else {
+            this.groupTwoClock = new Date(this.groupTwoClock.getTime() + timeToAdd);
+        }
+        
+        const newTime = group === 'Group One' ? this.groupOneClock : this.groupTwoClock;
+        
+        this.checkPassedThresholds(oldTime, newTime, group);
+        this.updateTimeDisplay();
+        this.saveState();
+    }
+
+    checkPassedThresholds(oldTime, newTime, group) {
+        // Check for passed hour
+        const hoursPassed = (newTime.getHours() - oldTime.getHours() + 24) % 24;
+        for (let i = 0; i < hoursPassed; i++) {
+            this.playSound('hourly-chime');
+        }
+        
+        // Check for passed midnight
+        if ((oldTime.getHours() < 24 && newTime.getHours() >= 0 && oldTime.getDate() !== newTime.getDate()) ||
+            (oldTime.getHours() === 23 && newTime.getHours() === 0)) {
+            this.showMidnightAlert();
+            this.playSound('midnight-sound');
+        }
+    }
+
+    showMidnightAlert() {
+        const alert = document.getElementById('midnight-alert');
+        alert.setAttribute('aria-hidden', 'false');
+        setTimeout(() => {
+            alert.setAttribute('aria-hidden', 'true');
+        }, 5000);
+    }
+
+    logEvent(action, group) {
+        const time = group === 'Group One' ? this.groupOneClock : this.groupTwoClock;
+        const logEntry = {
+            time: new Date(time),
+            action: action,
+            group: group
+        };
+        this.eventLog.push(logEntry);
+        this.timeline.addEvent(logEntry);
+    }
+
+    performAction(action, group) {
+        const oldState = this.getState();
+        this.undoStack.push(oldState);
+        this.redoStack = [];
+
+        let actionDescription;
+        let timeToAdd;
+
+        switch (action) {
+            case 'newFloor':
+                timeToAdd = { minutes: 20, seconds: 0 };
+                actionDescription = 'Entered a new floor';
+                break;
+            case 'searchRoom':
+                timeToAdd = { minutes: 20, seconds: 0 };
+                actionDescription = 'Searched a room';
+                break;
+            case 'shortRest':
+                timeToAdd = { minutes: 60, seconds: 0 };
+                actionDescription = 'Took a short rest';
+                break;
+            case 'combat':
+                timeToAdd = { minutes: 0, seconds: 10 };
+                actionDescription = 'Completed a combat round';
+                break;
+            case 'ritualCasting':
+                timeToAdd = { minutes: 10, seconds: 0 };
+                actionDescription = 'Performed ritual casting';
+                break;
+            case 'taking20':
+                timeToAdd = { minutes: 1, seconds: 0 };
+                actionDescription = 'Took 20 on a check';
+                break;
+            case 'custom':
+                timeToAdd = this.getCustomTimeInput();
+                actionDescription = 'Custom time added';
+                break;
+        }
+
+        this.addTime(timeToAdd.minutes, timeToAdd.seconds, group);
+        this.logEvent(actionDescription, group);
+    }
+
+    getCustomTimeInput() {
+        const minutes = parseInt(prompt("Enter minutes to add:", "0")) || 0;
+        const seconds = parseInt(prompt("Enter seconds to add:", "0")) || 0;
+        return { minutes, seconds };
+    }
+
+    toggleGroupSplit() {
+        this.isGroupSplit = !this.isGroupSplit;
+        const splitButton = document.getElementById('split-button');
+        const groupTwoTime = document.getElementById('group-two-time');
+        const groupTwoButtons = document.getElementById('group-two-buttons');
+        
+        if (this.isGroupSplit) {
+            groupTwoTime.hidden = false;
+            groupTwoButtons.hidden = false;
+            this.groupTwoClock = new Date(this.groupOneClock);
+            splitButton.innerHTML = '<span class="icon" aria-hidden="true">👥</span>Back together';
+            this.logEvent('Group split', 'Group One');
+        } else {
+            groupTwoTime.hidden = true;
+            groupTwoButtons.hidden = true;
+            if (this.groupTwoClock > this.groupOneClock) {
+                this.groupOneClock = new Date(this.groupTwoClock);
+            }
+            splitButton.innerHTML = '<span class="icon" aria-hidden="true">👥</span>Let\'s split up gang!';
+            this.logEvent('Groups reunited', 'Group One');
+        }
+
+        this.updateTimeDisplay();
+        this.timeline.toggleGroupSplit(this.isGroupSplit);
+        this.saveState();
+    }
+
+    undo() {
+        if (this.undoStack.length > 0) {
+            const currentState = this.getState();
+            this.redoStack.push(currentState);
+            const previousState = this.undoStack.pop();
+            this.setState(previousState);
+        }
+    }
+
+    redo() {
+        if (this.redoStack.length > 0) {
+            const currentState = this.getState();
+            this.undoStack.push(currentState);
+            const nextState = this.redoStack.pop();
+            this.setState(nextState);
+        }
+    }
+
+    resetTracker() {
+        if (confirm("Are you sure you want to reset the tracker? This will clear all events and reset the time.")) {
+            this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Reset to 6:00:00 PM
+            this.groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
+            this.isGroupSplit = false;
+            this.eventLog = [];
+            this.undoStack = [];
+            this.redoStack = [];
+            
+            this.updateTimeDisplay();
+            this.timeline.render();
+            this.saveState();
+
+            // Reset UI elements
+            document.getElementById('group-two-time').hidden = true;
+            document.getElementById('group-two-buttons').hidden = true;
+            document.getElementById('split-button').innerHTML = '<span class="icon" aria-hidden="true">👥</span>Let\'s split up gang!';
+        }
+    }
+
+    getState() {
+        return {
+            groupOneClock: this.groupOneClock.getTime(),
+            groupTwoClock: this.groupTwoClock.getTime(),
+            isGroupSplit: this.isGroupSplit,
+            eventLog: this.eventLog.map(event => ({...event, time: event.time.getTime()}))
+        };
+    }
+
+    setState(state) {
+        this.groupOneClock = new Date(state.groupOneClock);
+        this.groupTwoClock = new Date(state.groupTwoClock);
+        this.isGroupSplit = state.isGroupSplit;
+        this.eventLog = state.eventLog.map(event => ({...event, time: new Date(event.time)}));
+        this.updateTimeDisplay();
+        this.timeline.render();
+        this.saveState();
+    }
+
+    saveState() {
+        localStorage.setItem('deathHouseTrackerState', JSON.stringify(this.getState()));
+    }
+
+    loadState() {
+        const savedState = localStorage.getItem('deathHouseTrackerState');
+        if (savedState) {
+            this.setState(JSON.parse(savedState));
+        }
+    }
+
+    playSound(soundId) {
+        const sound = document.getElementById(soundId);
+        if (sound) {
+            sound.play().catch(error => console.error('Error playing sound:', error));
+        }
+    }
+
+    setVolume(value) {
+        const volume = parseFloat(value);
+        document.querySelectorAll('audio').forEach(audio => {
+            audio.volume = volume;
+        });
+    }
+
+    toggleMute() {
+        const muteToggle = document.getElementById('mute-toggle');
+        const isMuted = muteToggle.classList.toggle('muted');
+        document.querySelectorAll('audio').forEach(audio => {
+            audio.muted = isMuted;
+        });
+    }
+}
+
+class VerticalTimeline {
+    constructor(tracker) {
+        this.tracker = tracker;
+        this.container = document.getElementById('vertical-timeline');
+    }
+
+    render() {
+        this.container.innerHTML = '';
+        let currentGroup = null;
+        let groupOneColumn = document.createElement('div');
+        let groupTwoColumn = document.createElement('div');
+        groupOneColumn.className = 'timeline-column group-one';
+        groupTwoColumn.className = 'timeline-column group-two';
+
+        this.tracker.eventLog.forEach((event, index) => {
+            const eventElement = this.createEventElement(event, index);
+            if (event.action === 'Group split') {
+                currentGroup = 'split';
+                this.container.appendChild(groupOneColumn);
+                this.container.appendChild(groupTwoColumn);
+            } else if (event.action === 'Groups reunited') {
+                currentGroup = null;
+                this.container.appendChild(groupOneColumn);
+                this.container.appendChild(groupTwoColumn);
+                groupOneColumn = document.createElement('div');
+                groupTwoColumn = document.createElement('div');
+                groupOneColumn.className = 'timeline-column group-one';
+                groupTwoColumn.className = 'timeline-column group-two';
+            }
+
+            if (currentGroup === 'split') {
+                if (event.group === 'Group One') {
+                    groupOneColumn.appendChild(eventElement);
+                } else {
+                    groupTwoColumn.appendChild(eventElement);
+                }
+            } else {
+                this.container.appendChild(eventElement);
+            }
+        });
+    }
+
+    createEventElement(event, index) {
+        const eventElement = document.createElement('div');
+        eventElement.className = `timeline-event ${event.group.toLowerCase().replace(' ', '-')}`;
+        eventElement.innerHTML = `
+            <div class="timeline-icon">${this.getEventIcon(event.action)}</div>
+            <div class="timeline-content">
+                <h3>${this.formatTime(event.time)}</h3>
+                <p>${event.action}</p>
             </div>
-        </div>
+        `;
+        return eventElement;
+    }
 
-        <main class="tracker-layout">
-            <section class="control-panel">
-                <div class="action-buttons">
-                    <div id="group-one-buttons">
-                        <button data-action="newFloor" data-group="Group One" aria-label="New Floor for Group One">
-                            <span class="icon" aria-hidden="true">🏠</span>New Floor (G1)
-                        </button>
-                        <button data-action="searchRoom" data-group="Group One" aria-label="Search Room for Group One">
-                            <span class="icon" aria-hidden="true">🔍</span>Search Room (G1)
-                        </button>
-                        <button data-action="shortRest" data-group="Group One" aria-label="Short Rest for Group One">
-                            <span class="icon" aria-hidden="true">😴</span>Short Rest (G1)
-                        </button>
-                        <button data-action="combat" data-group="Group One" aria-label="Combat Round for Group One">
-                            <span class="icon" aria-hidden="true">⚔️</span>Combat Round (G1)
-                        </button>
-                        <button data-action="ritualCasting" data-group="Group One" aria-label="Ritual Casting for Group One">
-                            <span class="icon" aria-hidden="true">📜</span>Ritual Casting (G1)
-                        </button>
-                        <button data-action="taking20" data-group="Group One" aria-label="Taking 20 for Group One">
-                            <span class="icon" aria-hidden="true">🎯</span>Taking 20 (G1)
-                        </button>
-                        <button data-action="custom" data-group="Group One" aria-label="Custom Time for Group One">
-                            <span class="icon" aria-hidden="true">⏱️</span>Custom Time (G1)
-                        </button>
-                    </div>
+    formatTime(date) {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
 
-                    <div id="group-two-buttons" hidden>
-                        <button data-action="newFloor" data-group="Group Two" aria-label="New Floor for Group Two">
-                            <span class="icon" aria-hidden="true">🏠</span>New Floor (G2)
-                        </button>
-                        <button data-action="searchRoom" data-group="Group Two" aria-label="Search Room for Group Two">
-                            <span class="icon" aria-hidden="true">🔍</span>Search Room (G2)
-                        </button>
-                        <button data-action="shortRest" data-group="Group Two" aria-label="Short Rest for Group Two">
-                            <span class="icon" aria-hidden="true">😴</span>Short Rest (G2)
-                        </button>
-                        <button data-action="combat" data-group="Group Two" aria-label="Combat Round for Group Two">
-                            <span class="icon" aria-hidden="true">⚔️</span>Combat Round (G2)
-                        </button>
-                        <button data-action="ritualCasting" data-group="Group Two" aria-label="Ritual Casting for Group Two">
-                            <span class="icon" aria-hidden="true">📜</span>Ritual Casting (G2)
-                        </button>
-                        <button data-action="taking20" data-group="Group Two" aria-label="Taking 20 for Group Two">
-                            <span class="icon" aria-hidden="true">🎯</span>Taking 20 (G2)
-                        </button>
-                        <button data-action="custom" data-group="Group Two" aria-label="Custom Time for Group Two">
-                            <span class="icon" aria-hidden="true">⏱️</span>Custom Time (G2)
-                        </button>
-                    </div>
-                </div>
+    getEventIcon(action) {
+        const icons = {
+            'Entered a new floor': '🏠',
+            'Searched a room': '🔍',
+            'Took a short rest': '😴',
+            'Completed a combat round': '⚔️',
+            'Performed ritual casting': '📜',
+            'Took 20 on a check': '🎯',
+            'Custom time added': '⏱️',
+            'Group split': '👥',
+            'Groups reunited': '🤝'
+        };
+        return icons[action] || '❓';
+    }
 
-                <div class="global-controls">
-                    <button id="split-button" aria-label="Toggle Group Split">
-                        <span class="icon" aria-hidden="true">👥</span>Let's split up gang!
-                    </button>
-                    <button id="undo-button" aria-label="Undo last action">
-                        <span class="icon" aria-hidden="true">↩️</span>Undo
-                    </button>
-                    <button id="redo-button" aria-label="Redo last undone action">
-                        <span class="icon" aria-hidden="true">↪️</span>Redo
-                    </button>
-                    <button id="reset-button" aria-label="Reset timeline and clock">
-                        <span class="icon" aria-hidden="true">🔄</span>Reset
-                    </button>
-                    <div class="volume-control">
-                        <label for="volume-control">Volume:</label>
-                        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="1" aria-label="Adjust volume">
-                        <button id="mute-toggle" aria-label="Toggle mute">
-                            <span class="icon" aria-hidden="true">🔊</span>
-                        </button>
-                    </div>
-                </div>
-            </section>
+    addEvent(event) {
+        this.render(); // Re-render the entire timeline for simplicity
+    }
 
-            <section id="vertical-timeline" aria-label="Event Timeline">
-                <!-- Timeline events will be dynamically inserted here -->
-            </section>
-        </main>
+    toggleGroupSplit(isSplit) {
+        this.render(); // Re-render to reflect the split or reunited state
+    }
+}
 
-        <div id="midnight-alert" class="modal" aria-hidden="true">
-            <div class="modal-content">
-                <h2>Midnight Strikes!</h2>
-                <p>The flesh mound in the Ritual Chamber awakens and begins its hunt...</p>
-                <button onclick="document.getElementById('midnight-alert').setAttribute('aria-hidden', 'true')" aria-label="Close midnight alert">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <audio id="hourly-chime" src="https://github.com/b00yahg/Death-House-Time-Tracker/raw/main/clockchime.mp3"></audio>
-    <audio id="midnight-sound" src="https://soundbible.com/grab.php?id=1764&type=mp3"></audio>
-
-    <script src="death-house-tracker.js"></script>
-</body>
-</html>
+// Initialize the tracker when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    const tracker = new DeathHouseTracker();
+});
