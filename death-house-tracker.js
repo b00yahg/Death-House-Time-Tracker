@@ -1,5 +1,5 @@
 // death-house-tracker.js
-
+console.log("Death House Tracker script loaded");
 class DeathHouseTracker {
     constructor() {
         this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Start at 6:00:00 PM
