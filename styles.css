@@ -34,7 +34,7 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 
 h1 {
@@ -42,6 +42,22 @@ h1 {
     color: var(--primary-color);
     text-shadow: 2px 2px 4px #000000;
     font-size: 3rem;
+}
+
+#sticky-clock {
+    position: sticky;
+    top: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    padding: 10px 0;
+    box-shadow: 0 2px 5px rgba(255, 0, 0, 0.2);
+    margin-bottom: 1rem;
+}
+
+#time-display {
+    font-size: 1.5rem;
+    text-align: center;
+    color: var(--primary-color);
 }
 
 .tracker-layout {
@@ -71,24 +87,17 @@ h1 {
     box-shadow: 0 0 15px var(--shadow-color);
 }
 
-#time-display {
-    font-size: 1.5rem;
-    text-align: center;
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: var(--secondary-color);
-    border-radius: 5px;
-    box-shadow: 0 0 10px var(--shadow-color);
-}
-
 .action-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 10px;
     margin-bottom: 20px;
 }
 
 button {
+    flex: 0 1 calc(33.333% - 10px);
+    max-width: 200px;
     padding: 12px 18px;
     font-size: 1rem;
     cursor: pointer;
@@ -98,6 +107,13 @@ button {
     border-radius: 5px;
     transition: all 0.3s;
     font-family: 'Courier New', monospace;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    button {
+        flex: 0 1 calc(50% - 10px);
+    }
 }
 
 button:hover, button:focus {
@@ -130,6 +146,13 @@ input[type="range"] {
     max-height: 600px;
     overflow-y: auto;
     box-shadow: 0 0 15px var(--shadow-color);
+}
+
+.timeline-column {
+    display: inline-block;
+    vertical-align: top;
+    width: 49%;
+    padding: 0 10px;
 }
 
 .timeline-event {
