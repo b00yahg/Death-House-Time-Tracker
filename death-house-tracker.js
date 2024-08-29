@@ -8,10 +8,12 @@ class DeathHouseTracker {
         this.eventLog = [];
         this.undoStack = [];
         this.redoStack = [];
+        this.timeline = new VerticalTimeline(this);
 
         this.initializeEventListeners();
         this.loadState();
         this.updateTimeDisplay();
+        this.timeline.render();
     }
 
     initializeEventListeners() {
@@ -79,37 +81,14 @@ class DeathHouseTracker {
     }
 
     logEvent(action, group) {
-        const timeString = this.formatTime(group === 'Group One' ? this.groupOneClock : this.groupTwoClock);
+        const time = group === 'Group One' ? this.groupOneClock : this.groupTwoClock;
         const logEntry = {
-            time: timeString,
+            time: new Date(time),
             action: action,
             group: group
         };
         this.eventLog.push(logEntry);
-        this.updateEventLog();
-    }
-
-    updateEventLog() {
-        const groupOneLog = document.getElementById('group-one-log');
-        const groupTwoLog = document.getElementById('group-two-log');
-        groupOneLog.innerHTML = '';
-        groupTwoLog.innerHTML = '';
-
-        this.eventLog.forEach(entry => {
-            const logEntryElement = document.createElement('div');
-            logEntryElement.className = 'log-entry';
-            logEntryElement.textContent = `${entry.time} - ${entry.action}`;
-
-            if (!this.isGroupSplit || entry.group === 'Group One') {
-                groupOneLog.appendChild(logEntryElement.cloneNode(true));
-            }
-            if (this.isGroupSplit && entry.group === 'Group Two') {
-                groupTwoLog.appendChild(logEntryElement.cloneNode(true));
-            }
-        });
-
-        groupOneLog.scrollTop = groupOneLog.scrollHeight;
-        groupTwoLog.scrollTop = groupTwoLog.scrollHeight;
+        this.timeline.addEvent(logEntry);
     }
 
     performAction(action, group) {
@@ -168,14 +147,12 @@ class DeathHouseTracker {
         if (this.isGroupSplit) {
             document.getElementById('group-two-time').style.display = 'block';
             document.getElementById('group-two-buttons').style.display = 'flex';
-            document.getElementById('group-two-log').style.display = 'block';
             this.groupTwoClock = new Date(this.groupOneClock);
             splitButton.innerHTML = '<span class="icon">👥</span>Back together';
             this.logEvent('Group split', 'Group One');
         } else {
             document.getElementById('group-two-time').style.display = 'none';
             document.getElementById('group-two-buttons').style.display = 'none';
-            document.getElementById('group-two-log').style.display = 'none';
             // Merge times when groups reconvene
             if (this.groupTwoClock > this.groupOneClock) {
                 this.groupOneClock = new Date(this.groupTwoClock);
@@ -185,7 +162,7 @@ class DeathHouseTracker {
         }
 
         this.updateTimeDisplay();
-        this.updateEventLog();
+        this.timeline.toggleGroupSplit(this.isGroupSplit);
         this.saveState();
     }
 
@@ -212,7 +189,7 @@ class DeathHouseTracker {
             groupOneClock: this.groupOneClock.getTime(),
             groupTwoClock: this.groupTwoClock.getTime(),
             isGroupSplit: this.isGroupSplit,
-            eventLog: [...this.eventLog]
+            eventLog: this.eventLog.map(event => ({...event, time: event.time.getTime()}))
         };
     }
 
@@ -220,9 +197,9 @@ class DeathHouseTracker {
         this.groupOneClock = new Date(state.groupOneClock);
         this.groupTwoClock = new Date(state.groupTwoClock);
         this.isGroupSplit = state.isGroupSplit;
-        this.eventLog = [...state.eventLog];
+        this.eventLog = state.eventLog.map(event => ({...event, time: new Date(event.time)}));
         this.updateTimeDisplay();
-        this.updateEventLog();
+        this.timeline.render();
         this.saveState();
     }
 
@@ -257,6 +234,63 @@ class DeathHouseTracker {
         document.querySelectorAll('audio').forEach(audio => {
             audio.muted = isMuted;
         });
+    }
+}
+
+class VerticalTimeline {
+    constructor(tracker) {
+        this.tracker = tracker;
+        this.container = document.getElementById('vertical-timeline');
+    }
+
+    render() {
+        this.container.innerHTML = '';
+        this.tracker.eventLog.forEach((event, index) => {
+            const eventElement = this.createEventElement(event, index);
+            this.container.appendChild(eventElement);
+        });
+    }
+
+    createEventElement(event, index) {
+        const eventElement = document.createElement('div');
+        eventElement.className = `timeline-event ${event.group.toLowerCase().replace(' ', '-')}`;
+        eventElement.innerHTML = `
+            <div class="timeline-icon">${this.getEventIcon(event.action)}</div>
+            <div class="timeline-content">
+                <h3>${this.formatTime(event.time)}</h3>
+                <p>${event.action}</p>
+            </div>
+        `;
+        return eventElement;
+    }
+
+    formatTime(date) {
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    getEventIcon(action) {
+        // Define icons for different actions
+        const icons = {
+            'Entered a new floor': '🏠',
+            'Searched a room': '🔍',
+            'Took a short rest': '😴',
+            'Completed a combat round': '⚔️',
+            'Performed ritual casting': '📜',
+            'Took 20 on a check': '🎯',
+            'Custom time added': '⏱️',
+            'Group split': '👥',
+            'Groups reunited': '🤝'
+        };
+        return icons[action] || '❓';
+    }
+
+    addEvent(event) {
+        const eventElement = this.createEventElement(event, this.tracker.eventLog.length - 1);
+        this.container.appendChild(eventElement);
+    }
+
+    toggleGroupSplit(isSplit) {
+        this.container.classList.toggle('group-split', isSplit);
     }
 }
 
