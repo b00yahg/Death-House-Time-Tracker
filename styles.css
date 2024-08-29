@@ -88,18 +88,23 @@ h1 {
 }
 
 .action-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 20px;
 }
 
+.global-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+}
+
 button {
-    flex: 0 1 calc(33.333% - 10px);
-    max-width: 200px;
-    padding: 12px 18px;
-    font-size: 1rem;
+    width: 100%;
+    padding: 15px 10px;
+    font-size: 0.9rem;
     cursor: pointer;
     background-color: var(--secondary-color);
     color: var(--text-color);
@@ -108,12 +113,10 @@ button {
     transition: all 0.3s;
     font-family: 'Courier New', monospace;
     text-align: center;
-}
-
-@media (max-width: 768px) {
-    button {
-        flex: 0 1 calc(50% - 10px);
-    }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 button:hover, button:focus {
@@ -122,21 +125,29 @@ button:hover, button:focus {
     outline: none;
 }
 
-.global-controls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
+button .icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+#split-button, #reset-button {
+    grid-column: span 3;
+    background-color: var(--primary-color);
 }
 
 .volume-control {
+    grid-column: span 3;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 input[type="range"] {
-    width: 100px;
+    flex-grow: 1;
+}
+
+#mute-toggle {
+    width: auto;
 }
 
 #vertical-timeline {
@@ -219,16 +230,6 @@ input[type="range"] {
     display: block;
 }
 
-#reset-button {
-    background-color: #8b0000;
-    border-color: #ff0000;
-}
-
-#reset-button:hover, #reset-button:focus {
-    background-color: #ff0000;
-    box-shadow: 0 0 15px #ff0000;
-}
-
 /* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
     * {
@@ -245,6 +246,22 @@ input[type="range"] {
         --background-color: #000000;
         --shadow-color: #ff0000;
         --timeline-color: #ff0000;
+    }
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .action-buttons, .global-controls {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    #split-button, #reset-button, .volume-control {
+        grid-column: span 2;
+    }
+
+    .timeline-column {
+        width: 100%;
+        padding: 0;
     }
 }
 
