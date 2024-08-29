@@ -23,73 +23,47 @@
         <main class="tracker-layout">
             <section class="control-panel">
                 <div class="action-buttons">
-                    <div id="group-one-buttons">
-                        <button data-action="newFloor" data-group="Group One" aria-label="New Floor for Group One">
-                            <span class="icon" aria-hidden="true">🏠</span>New Floor (G1)
-                        </button>
-                        <button data-action="searchRoom" data-group="Group One" aria-label="Search Room for Group One">
-                            <span class="icon" aria-hidden="true">🔍</span>Search Room (G1)
-                        </button>
-                        <button data-action="shortRest" data-group="Group One" aria-label="Short Rest for Group One">
-                            <span class="icon" aria-hidden="true">😴</span>Short Rest (G1)
-                        </button>
-                        <button data-action="combat" data-group="Group One" aria-label="Combat Round for Group One">
-                            <span class="icon" aria-hidden="true">⚔️</span>Combat Round (G1)
-                        </button>
-                        <button data-action="ritualCasting" data-group="Group One" aria-label="Ritual Casting for Group One">
-                            <span class="icon" aria-hidden="true">📜</span>Ritual Casting (G1)
-                        </button>
-                        <button data-action="taking20" data-group="Group One" aria-label="Taking 20 for Group One">
-                            <span class="icon" aria-hidden="true">🎯</span>Taking 20 (G1)
-                        </button>
-                        <button data-action="custom" data-group="Group One" aria-label="Custom Time for Group One">
-                            <span class="icon" aria-hidden="true">⏱️</span>Custom Time (G1)
-                        </button>
-                    </div>
-
-                    <div id="group-two-buttons" hidden>
-                        <button data-action="newFloor" data-group="Group Two" aria-label="New Floor for Group Two">
-                            <span class="icon" aria-hidden="true">🏠</span>New Floor (G2)
-                        </button>
-                        <button data-action="searchRoom" data-group="Group Two" aria-label="Search Room for Group Two">
-                            <span class="icon" aria-hidden="true">🔍</span>Search Room (G2)
-                        </button>
-                        <button data-action="shortRest" data-group="Group Two" aria-label="Short Rest for Group Two">
-                            <span class="icon" aria-hidden="true">😴</span>Short Rest (G2)
-                        </button>
-                        <button data-action="combat" data-group="Group Two" aria-label="Combat Round for Group Two">
-                            <span class="icon" aria-hidden="true">⚔️</span>Combat Round (G2)
-                        </button>
-                        <button data-action="ritualCasting" data-group="Group Two" aria-label="Ritual Casting for Group Two">
-                            <span class="icon" aria-hidden="true">📜</span>Ritual Casting (G2)
-                        </button>
-                        <button data-action="taking20" data-group="Group Two" aria-label="Taking 20 for Group Two">
-                            <span class="icon" aria-hidden="true">🎯</span>Taking 20 (G2)
-                        </button>
-                        <button data-action="custom" data-group="Group Two" aria-label="Custom Time for Group Two">
-                            <span class="icon" aria-hidden="true">⏱️</span>Custom Time (G2)
-                        </button>
-                    </div>
+                    <button data-action="newFloor" data-group="Group One">
+                        <span class="icon">🏠</span>New Floor
+                    </button>
+                    <button data-action="searchRoom" data-group="Group One">
+                        <span class="icon">🔍</span>Search Room
+                    </button>
+                    <button data-action="shortRest" data-group="Group One">
+                        <span class="icon">😴</span>Short Rest
+                    </button>
+                    <button data-action="combat" data-group="Group One">
+                        <span class="icon">⚔️</span>Combat Round
+                    </button>
+                    <button data-action="ritualCasting" data-group="Group One">
+                        <span class="icon">📜</span>Ritual Casting
+                    </button>
+                    <button data-action="taking20" data-group="Group One">
+                        <span class="icon">🎯</span>Taking 20
+                    </button>
+                    <button data-action="custom" data-group="Group One">
+                        <span class="icon">⏱️</span>Custom Time
+                    </button>
                 </div>
-
+                
                 <div class="global-controls">
-                    <button id="split-button" aria-label="Toggle Group Split">
-                        <span class="icon" aria-hidden="true">👥</span>Let's split up gang!
+                    <button id="split-button">
+                        <span class="icon">👥</span>Let's split up gang!
                     </button>
-                    <button id="undo-button" aria-label="Undo last action">
-                        <span class="icon" aria-hidden="true">↩️</span>Undo
+                    <button id="undo-button">
+                        <span class="icon">↩️</span>Undo
                     </button>
-                    <button id="redo-button" aria-label="Redo last undone action">
-                        <span class="icon" aria-hidden="true">↪️</span>Redo
+                    <button id="redo-button">
+                        <span class="icon">↪️</span>Redo
                     </button>
-                    <button id="reset-button" aria-label="Reset timeline and clock">
-                        <span class="icon" aria-hidden="true">🔄</span>Reset
+                    <button id="reset-button">
+                        <span class="icon">🔄</span>Reset
                     </button>
                     <div class="volume-control">
                         <label for="volume-control">Volume:</label>
-                        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="1" aria-label="Adjust volume">
-                        <button id="mute-toggle" aria-label="Toggle mute">
-                            <span class="icon" aria-hidden="true">🔊</span>
+                        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="1">
+                        <button id="mute-toggle">
+                            <span class="icon">🔊</span>
                         </button>
                     </div>
                 </div>
