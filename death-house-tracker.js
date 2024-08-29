@@ -148,21 +148,21 @@ class DeathHouseTracker {
         const groupTwoButtons = document.getElementById('group-two-buttons');
         
         if (this.isGroupSplit) {
-            groupTwoTime.hidden = false;
-            groupTwoButtons.hidden = false;
+            groupTwoTime.style.display = 'block';
+            groupTwoButtons.style.display = 'flex';  // or 'grid', depending on your layout
             this.groupTwoClock = new Date(this.groupOneClock);
             splitButton.innerHTML = '<span class="icon" aria-hidden="true">👥</span>Back together';
             this.logEvent('Group split', 'Group One');
         } else {
-            groupTwoTime.hidden = true;
-            groupTwoButtons.hidden = true;
+            groupTwoTime.style.display = 'none';
+            groupTwoButtons.style.display = 'none';
             if (this.groupTwoClock > this.groupOneClock) {
                 this.groupOneClock = new Date(this.groupTwoClock);
             }
             splitButton.innerHTML = '<span class="icon" aria-hidden="true">👥</span>Let\'s split up gang!';
             this.logEvent('Groups reunited', 'Group One');
         }
-
+    
         this.updateTimeDisplay();
         this.timeline.render();
         this.saveState();
