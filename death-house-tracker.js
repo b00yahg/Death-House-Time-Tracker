@@ -2,35 +2,6 @@
 
 class DeathHouseTracker {
     constructor() {
-        // ... existing constructor code ...
-        this.initializeEventListeners();
-    }
-
-    initializeEventListeners() {
-        // ... existing event listeners ...
-        document.getElementById('reset-button').addEventListener('click', () => this.resetTracker());
-    }
-
-    resetTracker() {
-        if (confirm("Are you sure you want to reset the tracker? This will clear all events and reset the time.")) {
-            this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Reset to 6:00:00 PM
-            this.groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
-            this.isGroupSplit = false;
-            this.eventLog = [];
-            this.undoStack = [];
-            this.redoStack = [];
-            
-            this.updateTimeDisplay();
-            this.timeline.render();
-            this.saveState();
-
-            // Reset UI elements
-            document.getElementById('group-two-time').style.display = 'none';
-            document.getElementById('group-two-buttons').style.display = 'none';
-            document.getElementById('split-button').innerHTML = '<span class="icon">👥</span>Let\'s split up gang!';
-        }
-    }
-    constructor() {
         this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Start at 6:00:00 PM
         this.groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
         this.isGroupSplit = false;
@@ -47,15 +18,16 @@ class DeathHouseTracker {
 
     initializeEventListeners() {
         document.getElementById('split-button').addEventListener('click', () => this.toggleGroupSplit());
-        document.querySelectorAll('button[data-action]').forEach(button => {
+        document.querySelectorAll('.action-buttons button').forEach(button => {
             button.addEventListener('click', (e) => {
-                const action = e.target.dataset.action;
-                const group = e.target.dataset.group;
+                const action = e.target.closest('button').dataset.action;
+                const group = e.target.closest('button').dataset.group;
                 this.performAction(action, group);
             });
         });
         document.getElementById('undo-button').addEventListener('click', () => this.undo());
         document.getElementById('redo-button').addEventListener('click', () => this.redo());
+        document.getElementById('reset-button').addEventListener('click', () => this.resetTracker());
         document.getElementById('volume-control').addEventListener('input', (e) => this.setVolume(e.target.value));
         document.getElementById('mute-toggle').addEventListener('click', () => this.toggleMute());
     }
@@ -103,9 +75,9 @@ class DeathHouseTracker {
 
     showMidnightAlert() {
         const alert = document.getElementById('midnight-alert');
-        alert.style.display = 'block';
+        alert.setAttribute('aria-hidden', 'false');
         setTimeout(() => {
-            alert.style.display = 'none';
+            alert.setAttribute('aria-hidden', 'true');
         }, 5000);
     }
 
@@ -172,21 +144,22 @@ class DeathHouseTracker {
     toggleGroupSplit() {
         this.isGroupSplit = !this.isGroupSplit;
         const splitButton = document.getElementById('split-button');
+        const groupTwoTime = document.getElementById('group-two-time');
+        const groupTwoButtons = document.getElementById('group-two-buttons');
         
         if (this.isGroupSplit) {
-            document.getElementById('group-two-time').style.display = 'block';
-            document.getElementById('group-two-buttons').style.display = 'flex';
+            groupTwoTime.hidden = false;
+            groupTwoButtons.hidden = false;
             this.groupTwoClock = new Date(this.groupOneClock);
-            splitButton.innerHTML = '<span class="icon">👥</span>Back together';
+            splitButton.innerHTML = '<span class="icon" aria-hidden="true">👥</span>Back together';
             this.logEvent('Group split', 'Group One');
         } else {
-            document.getElementById('group-two-time').style.display = 'none';
-            document.getElementById('group-two-buttons').style.display = 'none';
-            // Merge times when groups reconvene
+            groupTwoTime.hidden = true;
+            groupTwoButtons.hidden = true;
             if (this.groupTwoClock > this.groupOneClock) {
                 this.groupOneClock = new Date(this.groupTwoClock);
             }
-            splitButton.innerHTML = '<span class="icon">👥</span>Let\'s split up gang!';
+            splitButton.innerHTML = '<span class="icon" aria-hidden="true">👥</span>Let\'s split up gang!';
             this.logEvent('Groups reunited', 'Group One');
         }
 
@@ -210,6 +183,26 @@ class DeathHouseTracker {
             this.undoStack.push(currentState);
             const nextState = this.redoStack.pop();
             this.setState(nextState);
+        }
+    }
+
+    resetTracker() {
+        if (confirm("Are you sure you want to reset the tracker? This will clear all events and reset the time.")) {
+            this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Reset to 6:00:00 PM
+            this.groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
+            this.isGroupSplit = false;
+            this.eventLog = [];
+            this.undoStack = [];
+            this.redoStack = [];
+            
+            this.updateTimeDisplay();
+            this.timeline.render();
+            this.saveState();
+
+            // Reset UI elements
+            document.getElementById('group-two-time').hidden = true;
+            document.getElementById('group-two-buttons').hidden = true;
+            document.getElementById('split-button').innerHTML = '<span class="icon" aria-hidden="true">👥</span>Let\'s split up gang!';
         }
     }
 
