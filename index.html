@@ -16,7 +16,7 @@
         <div id="sticky-clock">
             <div id="time-display" aria-live="polite">
                 <div id="group-one-time">Group One: 6:00:00 PM</div>
-                <div id="group-two-time" hidden>Group Two: 6:00:00 PM</div>
+                <div id="group-two-time" style="display: none;">Group Two: 6:00:00 PM</div>
             </div>
         </div>
 
@@ -41,9 +41,12 @@
                     <button data-action="taking20" data-group="Group One">
                         <span class="icon">🎯</span>Taking 20 (G1)
                     </button>
+                    <button data-action="custom" data-group="Group One">
+                        <span class="icon">⏱️</span>Custom Time (G1)
+                    </button>
                 </div>
 
-                <div class="action-buttons" id="group-two-buttons" hidden>
+                <div class="action-buttons" id="group-two-buttons" style="display: none;">
                     <button data-action="newFloor" data-group="Group Two">
                         <span class="icon">🏠</span>New Floor (G2)
                     </button>
@@ -62,18 +65,23 @@
                     <button data-action="taking20" data-group="Group Two">
                         <span class="icon">🎯</span>Taking 20 (G2)
                     </button>
+                    <button data-action="custom" data-group="Group Two">
+                        <span class="icon">⏱️</span>Custom Time (G2)
+                    </button>
                 </div>
 
                 <div class="global-controls">
                     <button id="split-button">
                         <span class="icon">👥</span>Let's split up gang!
                     </button>
-                    <button id="undo-button">
-                        <span class="icon">↩️</span>Undo
-                    </button>
-                    <button id="redo-button">
-                        <span class="icon">↪️</span>Redo
-                    </button>
+                    <div class="undo-redo-container">
+                        <button id="undo-button">
+                            <span class="icon">↩️</span>Undo
+                        </button>
+                        <button id="redo-button">
+                            <span class="icon">↪️</span>Redo
+                        </button>
+                    </div>
                     <button id="reset-button">
                         <span class="icon">🔄</span>Reset
                     </button>
