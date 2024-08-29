@@ -2,6 +2,35 @@
 
 class DeathHouseTracker {
     constructor() {
+        // ... existing constructor code ...
+        this.initializeEventListeners();
+    }
+
+    initializeEventListeners() {
+        // ... existing event listeners ...
+        document.getElementById('reset-button').addEventListener('click', () => this.resetTracker());
+    }
+
+    resetTracker() {
+        if (confirm("Are you sure you want to reset the tracker? This will clear all events and reset the time.")) {
+            this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Reset to 6:00:00 PM
+            this.groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
+            this.isGroupSplit = false;
+            this.eventLog = [];
+            this.undoStack = [];
+            this.redoStack = [];
+            
+            this.updateTimeDisplay();
+            this.timeline.render();
+            this.saveState();
+
+            // Reset UI elements
+            document.getElementById('group-two-time').style.display = 'none';
+            document.getElementById('group-two-buttons').style.display = 'none';
+            document.getElementById('split-button').innerHTML = '<span class="icon">👥</span>Let\'s split up gang!';
+        }
+    }
+    constructor() {
         this.groupOneClock = new Date(2024, 0, 1, 18, 0, 0); // Start at 6:00:00 PM
         this.groupTwoClock = new Date(2024, 0, 1, 18, 0, 0);
         this.isGroupSplit = false;
