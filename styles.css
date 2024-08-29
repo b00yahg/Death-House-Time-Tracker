@@ -245,3 +245,13 @@ input[type="range"] {
         overflow: visible;
     }
 }
+#reset-button {
+    background-color: #8b0000; /* Dark red */
+    color: #ffffff;
+    border-color: #ff0000;
+}
+
+#reset-button:hover, #reset-button:focus {
+    background-color: #ff0000;
+    box-shadow: 0 0 15px #ff0000;
+}
