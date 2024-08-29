@@ -164,7 +164,7 @@ class DeathHouseTracker {
         }
 
         this.updateTimeDisplay();
-        this.timeline.toggleGroupSplit(this.isGroupSplit);
+        this.timeline.render();
         this.saveState();
     }
 
@@ -299,6 +299,12 @@ class VerticalTimeline {
                 this.container.appendChild(eventElement);
             }
         });
+
+        // Append any remaining events after the last split/reunite
+        if (currentGroup === 'split') {
+            this.container.appendChild(groupOneColumn);
+            this.container.appendChild(groupTwoColumn);
+        }
     }
 
     createEventElement(event, index) {
