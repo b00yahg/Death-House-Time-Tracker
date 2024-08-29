@@ -1,0 +1,222 @@
+/* styles.css */
+
+:root {
+    --primary-color: #b30000;
+    --secondary-color: #4a0000;
+    --text-color: #ff9999;
+    --background-color: #1a1a1a;
+    --shadow-color: #ff0000;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Cardo', serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    background-image: url('https://wallpapers.com/images/hd/wood-floor-background-wl3vty8w87fpi887.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+h1 {
+    font-family: 'Creepster', cursive;
+    color: var(--primary-color);
+    text-shadow: 2px 2px 4px #000000;
+    font-size: 3rem;
+}
+
+#time-display {
+    display: flex;
+    justify-content: space-around;
+    font-size: 1.5rem;
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: var(--primary-color);
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--shadow-color);
+}
+
+#action-buttons, #group-two-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 12px 18px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border: 2px solid var(--text-color);
+    border-radius: 5px;
+    transition: all 0.3s;
+    font-family: 'Courier New', monospace;
+}
+
+button:hover, button:focus {
+    background-color: var(--primary-color);
+    box-shadow: 0 0 10px var(--shadow-color);
+    outline: none;
+}
+
+#control-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+input[type="range"] {
+    width: 100px;
+}
+
+#event-log {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    height: 400px;
+    overflow-y: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--shadow-color);
+    padding: 15px;
+}
+
+.log-column {
+    flex: 1;
+}
+
+.log-entry {
+    margin-bottom: 8px;
+    padding: 8px;
+    background-color: rgba(74, 0, 0, 0.3);
+    border-radius: 3px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid var(--primary-color);
+    border-radius: 10px;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 0 20px var(--shadow-color);
+}
+
+.modal[aria-hidden="false"] {
+    display: block;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+    #time-display {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #action-buttons, #group-two-buttons {
+        flex-direction: column;
+    }
+
+    #control-panel {
+        flex-wrap: wrap;
+    }
+
+    #event-log {
+        flex-direction: column;
+        height: auto;
+        max-height: 400px;
+    }
+
+    .log-column {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-color: #ff0000;
+        --secondary-color: #800000;
+        --text-color: #ffffff;
+        --background-color: #000000;
+        --shadow-color: #ff0000;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    /* Our theme is already dark, so no changes needed */
+}
+
+/* Print styles */
+@media print {
+    body {
+        background-image: none;
+        color: #000;
+    }
+
+    #action-buttons, #group-two-buttons, #control-panel {
+        display: none;
+    }
+
+    #event-log {
+        height: auto;
+        overflow: visible;
+    }
+}
