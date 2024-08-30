@@ -276,20 +276,22 @@ class VerticalTimeline {
         this.tracker.eventLog.forEach((event, index) => {
             const eventElement = this.createEventElement(event, index);
             if (event.action === 'Group split') {
+                this.container.appendChild(eventElement);
                 currentGroup = 'split';
                 this.container.appendChild(groupOneColumn);
                 this.container.appendChild(groupTwoColumn);
             } else if (event.action === 'Groups reunited') {
+                if (currentGroup === 'split') {
+                    this.container.appendChild(groupOneColumn);
+                    this.container.appendChild(groupTwoColumn);
+                }
+                this.container.appendChild(eventElement);
                 currentGroup = null;
-                this.container.appendChild(groupOneColumn);
-                this.container.appendChild(groupTwoColumn);
                 groupOneColumn = document.createElement('div');
                 groupTwoColumn = document.createElement('div');
                 groupOneColumn.className = 'timeline-column group-one';
                 groupTwoColumn.className = 'timeline-column group-two';
-            }
-
-            if (currentGroup === 'split') {
+            } else if (currentGroup === 'split') {
                 if (event.group === 'Group One') {
                     groupOneColumn.appendChild(eventElement);
                 } else {
