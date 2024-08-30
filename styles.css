@@ -94,6 +94,24 @@ h1 {
     margin-bottom: 20px;
 }
 
+.action-buttons button {
+    width: 100%;
+    padding: 15px 10px;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.action-buttons button .icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+#group-one-buttons, #group-two-buttons {
+    margin-bottom: 20px;
+}
+
 .global-controls {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -287,3 +305,4 @@ input[type="range"] {
         overflow: visible;
     }
 }
+
